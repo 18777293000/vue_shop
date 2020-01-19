@@ -69,9 +69,8 @@
 					console.log(2,res);
 					if(res.meta.status !== 200)return this.$message.error('faliue');
 					this.$message.success('success');	
-					console.log(res);
 					window.sessionStorage.setItem('token',res.data.token);
-					this.$router.push('/home');
+					this.$router.push('/home');	
 				});
 			}
 		}
