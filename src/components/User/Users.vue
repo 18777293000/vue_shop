@@ -19,27 +19,6 @@
 			</el-row>
 		</el-card>
 
-		<el-dialog title="Add User" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
-			<el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px">
-				<el-form-item label="UserName" prop="userName">
-					<el-input v-model="addForm.userName"></el-input>
-				</el-form-item>
-				<el-form-item label="Password" prop="passWord">
-					<el-input v-model="addForm.passWord" type="password"></el-input>
-				</el-form-item>
-				<el-form-item label="Mail" prop="Mail">
-					<el-input v-model="addForm.Mail"></el-input>
-				</el-form-item>
-				<el-form-item label="mobile" prop="mobile">
-					<el-input v-model="addForm.mobile"></el-input>
-				</el-form-item>
-			</el-form>
-			<span slot="footer" class="dialog-footer">
-				<el-button @click="addDialogVisible = false">Cancel</el-button>
-				<el-button type="primary" @click="addUser">Sure</el-button>
-			</span>
-		</el-dialog>
-
 		<el-table :data="userList" border stripe>
 			<el-table-column type="index"></el-table-column>
 			<el-table-column label="name" prop="username"></el-table-column>
@@ -52,12 +31,56 @@
 					</el-switch>
 				</template>
 			</el-table-column>
-			<el-table-column label="operate"></el-table-column>
+			<el-table-column label="operate">
+				<template slot-scope="scope">
+					<el-button type="primary" icon="el-icon-edit" size="mini" @click="showDialog(scope.row.id)"></el-button>
+					<el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.id)"></el-button>
+				</template>
+			</el-table-column>
 		</el-table>
 
 		<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="queryInfo.pagenum"
 		 :page-sizes="[1, 2, 5, 10]" :page-size="queryInfo.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total">
 		</el-pagination>
+
+		<el-dialog title="Add User" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
+			<el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px">
+				<el-form-item label="username" prop="username">
+					<el-input v-model="addForm.username"></el-input>
+				</el-form-item>
+				<el-form-item label="password" prop="password">
+					<el-input v-model="addForm.password" type="password"></el-input>
+				</el-form-item>
+				<el-form-item label="email" prop="email">
+					<el-input v-model="addForm.email"></el-input>
+				</el-form-item>
+				<el-form-item label="mobile" prop="mobile">
+					<el-input v-model="addForm.mobile"></el-input>
+				</el-form-item>
+			</el-form>
+			<span slot="footer" class="dialog-footer">
+				<el-button @click="addDialogVisible = false">Cancel</el-button>
+				<el-button type="primary" @click="addUser">Sure</el-button>
+			</span>
+		</el-dialog>
+
+		<el-dialog title="edituser" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
+			<el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="80px">
+				<el-form-item label="username">
+					<el-input v-model="editForm.username" disabled></el-input>
+				</el-form-item>
+				<el-form-item label="email" prop="email">
+					<el-input v-model="editForm.email"></el-input>
+				</el-form-item>
+				<el-form-item label="mobile" prop="mobile">
+					<el-input v-model="editForm.mobile"></el-input>
+				</el-form-item>
+			</el-form>
+			<span slot="footer" class="dialog-footer">
+				<el-button @click="editDialogVisible = false">取 消</el-button>
+				<el-button type="primary" @click="editUserInfo">确 定</el-button>
+			</span>
+		</el-dialog>
 	</div>
 </template>
 
@@ -73,27 +96,61 @@
 				userList: [],
 				total: 0,
 				addDialogVisible: false,
-				addForm:{
-					userName:'',
-					passWord:'',
-					Mail:'',
-					mobile:''
+				editDialogVisible: false,
+				addForm: {
+					username: '',
+					password: '',
+					email: '',
+					mobile: ''
 				},
-				addFormRules:{
-					userName:[
-						 { required: true, message: '请输入name', trigger: 'blur' },
-						 {min:3,max:10,message:'3~10',trigger:'blur'}
+				editForm: {},
+				addFormRules: {
+					username: [{
+							required: true,
+							message: '请输入name',
+							trigger: 'blur'
+						},
+						{
+							min: 3,
+							max: 10,
+							message: '3~10',
+							trigger: 'blur'
+						}
 					],
-					passWord:[
-						{ required: true, message: '请输入passwprd', trigger: 'blur' },
-						{min:6,max:15,message:'6~15',trigger:'blur'}
+					password: [{
+							required: true,
+							message: '请输入passwprd',
+							trigger: 'blur'
+						},
+						{
+							min: 6,
+							max: 15,
+							message: '6~15',
+							trigger: 'blur'
+						}
 					],
-					Mail:[
-						{ required: true, message: '请输入mail', trigger: 'blur' }
-					],
-					mobile:[
-						{ required: true, message: '请输入mobile', trigger: 'blur' }
-					]
+					email: [{
+						required: true,
+						message: '请输入mail',
+						trigger: 'blur'
+					}],
+					mobile: [{
+						required: true,
+						message: '请输入mobile',
+						trigger: 'blur'
+					}]
+				},
+				editFormRules: {
+					email: [{
+						required: true,
+						message: 'input email',
+						trigger: 'blur'
+					}, ],
+					mobile: [{
+						required: true,
+						message: 'input mobile',
+						trigger: 'blur'
+					}, ]
 				}
 			}
 		},
@@ -133,20 +190,68 @@
 				this.$message.success('update success')
 				console.log(7, userInfo)
 			},
-			addDialogClosed(){
+			addDialogClosed() {
 				this.$refs.addFormRef.resetFields()
 			},
-			addUser(){
-			        this.$refs.addFormRef.validate(async valid=>{
-					if(!valid) return this.$message.error('false')
-					const {data:res} = await this.$http.post('users',this.addForm)
-					if(res.meta.status !== 201) return this.$message.error(res.meta.msg)
-					this.$message.success('add user success')
+			addUser() {
+				this.$refs.addFormRef.validate(async valid => {
+					if (!valid) return
+					const {
+						data: res
+					} = await this.$http.post('users', this.addForm)
+					if (res.meta.status !== 201) {
+						return this.$message.error('false')
+					}
+					this.$message.success('success')
 					this.addDialogVisible = false
 					this.getUserList()
-					console.log(10)
 				})
-			}
+			},
+			async showDialog(id) {
+				// console.log(id)
+				const {
+					data: res
+				} = await this.$http.get('users/' + id)
+				if (res.meta.status !== 200) {
+					return this.$message.error('false')
+				}
+				this.editForm = res.data
+				this.editDialogVisible = true
+			},
+			editDialogClosed() {
+				this.$refs.editFormRef.resetFields()
+			},
+			editUserInfo() {
+				this.$refs.editFormRef.validate(async valid => {
+					if (!valid) return this.$message.error('false')
+					const {
+						data: res
+					} = await this.$http.put('users/' + this.editForm.id, {
+						email: this.editForm.email,
+						mobile: this.editForm.mobile
+					})
+					if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+					this.editDialogVisible = false
+					this.getUserList()
+					this.$message.success('success')
+				})
+			},
+			async removeUserById(id) {
+				const confirmResult = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).catch(err => err)
+                if(confirmResult !== 'confirm'){
+					return this.$message.info('cancel delete')
+				}
+                const {data:res} = await this.$http.delete('users/' + id)
+				if(res.meta.status !== 200){
+					this.$message.error('delete false')
+				}
+				this.$message.success('delete complete')
+				this.getUserList()
+			},
 		}
 	}
 </script>
