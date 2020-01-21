@@ -50,7 +50,7 @@
 			logout() {
 				window.sessionStorage.clear();
 				this.$router.push('/login');
-				console.log(3, this);
+				//console.log(3, this);
 			},
 			async getMenuList() {
 				const {
@@ -58,7 +58,7 @@
 				} = await this.$http.get('menus')
 				if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 				this.menuList = res.data
-				console.log(4, res)
+				//console.log(4, res)
 			},
 			taggleCollapse() {
 				this.isCollapse = !this.isCollapse

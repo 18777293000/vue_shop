@@ -167,10 +167,10 @@
 				if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 				this.userList = res.data.users
 				this.totla = res.data.total
-				console.log(5, res)
+				//console.log(5, res)
 			},
 			handleSizeChange(newSize) {
-				console.log(6, newSize)
+				//console.log(6, newSize)
 				this.queryInfo.pagesize = newSize
 				this.getUserList()
 			},
@@ -179,7 +179,7 @@
 				this.getUserList()
 			},
 			async userStateChange(userInfo) {
-				console.log(7, userInfo)
+				//console.log(7, userInfo)
 				const {
 					data: res
 				} = await this.$http.put(`users/${userInfo.id}/state/${userInfo.mg_state}`)
@@ -188,7 +188,7 @@
 					return this.$message.error(res.meta.msg)
 				}
 				this.$message.success('update success')
-				console.log(7, userInfo)
+				//console.log(7, userInfo)
 			},
 			addDialogClosed() {
 				this.$refs.addFormRef.resetFields()

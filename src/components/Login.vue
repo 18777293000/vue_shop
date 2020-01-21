@@ -60,13 +60,13 @@
 		methods:{
 			resetLoginForm(){
 				this.$refs.loginFormRef.resetFields();
-				console.log(1,this);
+				//console.log(1,this);
 			},
 			login(){
 				this.$refs.loginFormRef.validate(async valid=>{
 					if(!valid) return;
 					const {data:res} = await this.$http.post('login',this.login_Form);
-					console.log(2,res);
+					//console.log(2,res);
 					if(res.meta.status !== 200)return this.$message.error('faliue');
 					this.$message.success('success');	
 					window.sessionStorage.setItem('token',res.data.token);
