@@ -43,11 +43,22 @@
 					<template slot-scope="scope">
 						<el-button size="mini" type="primary" icon="el-icon-edit">edit</el-button>
 						<el-button size="mini" type="danger" icon="el-icon-delete">delete</el-button>
-						<el-button size="mini" type="warning" icon="el-icon-setting" @click="showSetRightDialog">assign</el-button>
+						<el-button size="mini" type="warning" icon="el-icon-setting" @click="showSetRightDialog(scope.row)">assign</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</el-card>
+
+		<el-dialog title="assing" :visible.sync="setRightDialogVisible" 
+		width="50%" @close="setRightDialogClosed">
+			<el-tree :data="rightsList" :props="treeProps" show-checkbox
+			node-key="id" default-expand-all :default-checked-keys="defKeys"
+			ref="treeRef"></el-tree>
+			<span slot="footer" class="dialog-footer">
+				<el-button @click="setRightDialogVisible = false">取 消</el-button>
+				<el-button type="primary" @click="allotRights">确 定</el-button>
+			</span>
+		</el-dialog>
 	</div>
 </template>
 
@@ -55,7 +66,15 @@
 	export default {
 		data() {
 			return {
-				rolesList: []
+				rolesList: [],
+				setRightDialogVisible:false,
+				rightsList:[],
+				treeProps:{
+					children:'children',
+					label:'authName'
+				},
+				defKeys:[],
+				roleId:''
 			}
 		},
 		created() {
@@ -73,23 +92,56 @@
 				this.rolesList = res.data
 				console.log(res)
 			},
-			async removeRightById(role,rightId) {
+			async removeRightById(role, rightId) {
 				const confirmResault = await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
 					confirmButtonText: '确定',
 					cancelButtonText: '取消',
 					type: 'warning'
-				}).catch(err=>err)
-				if(confirmResault!=='confirm'){
+				}).catch(err => err)
+				if (confirmResault !== 'confirm') {
 					return this.$message.info('cancel')
 				}
-				const {data:res} = await this.$http.delete(`roles/${role.id}/rights/${rightId}`)
-				if(res.meta.status!==200){
+				const {
+					data: res
+				} = await this.$http.delete(`roles/${role.id}/rights/${rightId}`)
+				if (res.meta.status !== 200) {
 					return this.$message.error('false to delete')
 				}
 				role.children = res.data
 			},
-			showSetRightDialog(){
-				
+			async showSetRightDialog(role) {
+				this.roleId = role.id
+				const{data:res} = await this.$http.get('rights/tree')
+				if(res.meta.status !== 200)return this.$message.error('false')
+				this.rightsList = res.data 
+				console.log(this.rightsList)
+				this.getLeafKeys(role,this.defKeys)
+				this.setRightDialogVisible = true 
+			},
+			getLeafKeys(node,arr){
+				if(!node.children){
+					return arr.push(node.id)
+				}
+				node.children.forEach(item=>{
+					this.getLeafKeys(item,arr)
+				})
+			},
+			setRightDialogClosed(){
+				this.defKeys = []
+			},
+			async allotRights(){
+				const keys = [
+					...this.$refs.treeRef.getCheckedKeys(),
+					...this.$refs.treeRef.getHalfCheckedKeys()
+				]
+				const idStr = keys.join(',')
+				const {data:res} = await this.$http.post(`roles/${this.roleId}/rights`,{rids:idStr})
+				if(res.meta.status !== 200){
+					return this.$message.error(res.meta.msg)
+				}
+				this.$message.success('success')
+				this.getRolesList()
+				this.setRightDialogVisible = false
 			},
 		}
 	}

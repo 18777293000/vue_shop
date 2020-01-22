@@ -35,6 +35,7 @@
 				<template slot-scope="scope">
 					<el-button type="primary" icon="el-icon-edit" size="mini" @click="showDialog(scope.row.id)"></el-button>
 					<el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.id)"></el-button>
+					<el-button type="danger" icon="el-icon-setting" size="mini" @click="setRole(scope.row)"></el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -79,6 +80,26 @@
 			<span slot="footer" class="dialog-footer">
 				<el-button @click="editDialogVisible = false">取 消</el-button>
 				<el-button type="primary" @click="editUserInfo">确 定</el-button>
+			</span>
+		</el-dialog>
+
+		<el-dialog title="assing role" :visible.sync="setRoleDialogVisible" width="50%">
+			<div>
+				<p>nowuser:{{userInfo.username}}</p>
+				<p>nowuser:{{userInfo.role_name}}</p>
+				<p>assign new role:
+					<el-select v-model="selectedRoleId" placeholder="请选择">
+						<el-option v-for="item in rolesList" 
+						:key="item.id" 
+						:label="item.roleName" 
+						:value="item.id">
+						</el-option>
+					</el-select>
+				</p>
+			</div>
+			<span slot="footer" class="dialog-footer">
+				<el-button @click="setRoleDialogVisible = false">取 消</el-button>
+				<el-button type="primary" @click="setRoleDialogVisible = false">确 定</el-button>
 			</span>
 		</el-dialog>
 	</div>
@@ -151,7 +172,11 @@
 						message: 'input mobile',
 						trigger: 'blur'
 					}, ]
-				}
+				},
+				setRoleDialogVisible: false,
+				userInfo: {},
+				rolesList: [],
+				selectedRoleId:'',
 			}
 		},
 		created() {
@@ -242,15 +267,26 @@
 					cancelButtonText: '取消',
 					type: 'warning'
 				}).catch(err => err)
-                if(confirmResult !== 'confirm'){
+				if (confirmResult !== 'confirm') {
 					return this.$message.info('cancel delete')
 				}
-                const {data:res} = await this.$http.delete('users/' + id)
-				if(res.meta.status !== 200){
+				const {
+					data: res
+				} = await this.$http.delete('users/' + id)
+				if (res.meta.status !== 200) {
 					this.$message.error('delete false')
 				}
 				this.$message.success('delete complete')
 				this.getUserList()
+			},
+			async setRole(userInfo) {
+				this.userInfo = userInfo
+				const{
+					data: res
+				} = await this.$http.get('roles')
+				if (res.meta.status !== 200) return this.$message.error('res.meta.msg')
+				this.rolesList = res.data
+				this.setRoleDialogVisible = true
 			},
 		}
 	}
