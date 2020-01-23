@@ -83,7 +83,8 @@
 			</span>
 		</el-dialog>
 
-		<el-dialog title="assing role" :visible.sync="setRoleDialogVisible" width="50%">
+		<el-dialog title="assing role" :visible.sync="setRoleDialogVisible" 
+		width="50%" @close="setRoleDialongClosed">
 			<div>
 				<p>nowuser:{{userInfo.username}}</p>
 				<p>nowuser:{{userInfo.role_name}}</p>
@@ -99,7 +100,7 @@
 			</div>
 			<span slot="footer" class="dialog-footer">
 				<el-button @click="setRoleDialogVisible = false">取 消</el-button>
-				<el-button type="primary" @click="setRoleDialogVisible = false">确 定</el-button>
+				<el-button type="primary" @click="saveRoleInfo">确 定</el-button>
 			</span>
 		</el-dialog>
 	</div>
@@ -287,6 +288,20 @@
 				if (res.meta.status !== 200) return this.$message.error('res.meta.msg')
 				this.rolesList = res.data
 				this.setRoleDialogVisible = true
+			},
+			async saveRoleInfo(){
+				if(!this.selectedRoleId){
+					return this.$message.error('choose new role')
+				}
+				const{data:res} = await this.$http.put(`users/${this.userInfo.id}/role`,{rid:this.selectedRoleId})
+				if(res.meta.status!==200){return this.$message.error('false')}
+				this.$message.success('success')
+				this.getUserList()
+				this.setRoleDialogVisible = false
+			},
+			setRoleDialongClosed(){
+				this.selectedRoleId = ''
+				this.userInfo = ''
 			},
 		}
 	}
